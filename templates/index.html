@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Converter Pro</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <header>
+        <h1>File Converter Pro</h1>
+        <p>Quickly convert your files between formats.</p>
+    </header>
+    <main class="container">
+        <!-- Flash messages -->
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for message in messages %}
+                        <p class="flash">{{ message }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <!-- Image to PDF Converter -->
+        <div class="card">
+            <h2><i class="fas fa-file-image"></i> Image to PDF</h2>
+            <form action="{{ url_for('image_to_pdf') }}" method="post" enctype="multipart/form-data">
+                <div class="file-input-wrapper">
+                    <input type="file" id="images" name="images" class="file-input" accept=".jpg, .jpeg, .png" multiple required>
+                    <label for="images" class="file-input-label">
+                        <i class="fas fa-upload"></i> Choose Images...
+                    </label>
+                </div>
+                <button type="submit" class="btn">Convert to PDF</button>
+            </form>
+            {% if pdf_download_link %}
+                <div class="download-section">
+                    <h3>Conversion Successful!</h3>
+                    <a href="{{ url_for('download_file', filename=pdf_download_link) }}" class="download-link">Download PDF</a>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- PDF to Image Converter -->
+        <div class="card">
+            <h2><i class="fas fa-file-pdf"></i> PDF to Images</h2>
+            <form action="{{ url_for('pdf_to_image') }}" method="post" enctype="multipart/form-data">
+                <div class="file-input-wrapper">
+                    <input type="file" id="pdf" name="pdf" class="file-input" accept=".pdf" required>
+                    <label for="pdf" class="file-input-label">
+                        <i class="fas fa-upload"></i> Choose PDF...
+                    </label>
+                </div>
+                <button type="submit" class="btn">Convert to Images</button>
+            </form>
+            {% if image_download_links %}
+                <div class="download-section">
+                    <h3>Conversion Successful!</h3>
+                    {% for link in image_download_links %}
+                        <a href="{{ url_for('download_file', filename=link) }}" class="download-link">Download {{ link }}</a><br>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+    </main>
+</body>
+</html>
