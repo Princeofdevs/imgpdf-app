@@ -1,0 +1,15 @@
+venv/
+-pycache__/
+*.pyc
+*.pdf
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.svg
+*.ico
+*.db
+*.docx
+uploads/  
+outputs/
+.env
