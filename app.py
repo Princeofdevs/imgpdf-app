@@ -114,7 +114,15 @@ def pdf_to_image():
 @app.route('/download/<filename>')
 def download_file(filename):
     """Serves files from the converted folder for download."""
-    return send_from_directory(app.config['CONVERTED_FOLDER'], filename, as_attachment=True)
+    new_filename = request.args.get('new_filename')
+    # If a new filename is provided, use it for the download.
+    # Otherwise, the browser will use the original filename.
+    return send_from_directory(
+        app.config['CONVERTED_FOLDER'],
+        filename,
+        as_attachment=True,
+        download_name=new_filename
+    )
 
 if __name__ == '__main__':
     app.run(debug=True)

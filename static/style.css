@@ -1,201 +1,214 @@
+/*
+  Simple, focused stylesheet for the converter app.
+  - Centered card layout
+  - Solid purple background
+  - Clean, modern typography and spacing
+*/
+
+:root {
+    --bg-purple: #6D28D9;
+    --card-white: #FFFFFF;
+    --text-dark: #111827;
+    --text-light: #6B7280;
+    --border-light: #E5E7EB;
+    --radius: 16px;
+    --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+    --accent-green: #22C55E;
+    --accent-green-hover: #16A34A;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html, body {
+    height: 100%;
+    margin: 0;
+}
+
 body {
-    font-family: 'Poppins', sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: #4f4f4f;
-    margin: 0;
-    padding: 40px 20px;
+    display: grid;
+    place-items: center;
+    padding: 1rem;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: var(--bg-purple);
+    color: var(--text-dark); /* This variable is defined in the :root above */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.converter-card {
+    width: 100%;
+    max-width: 400px;
+    background-color: var(--card-white); /* This variable is defined in the :root above */
+    border-radius: var(--radius);
+    padding: 2.5rem;
+    box-shadow: var(--shadow);
+    text-align: center;
+}
+
+.converter-icon {
+    width: 48px;
+    height: 48px;
+    color: var(--bg-purple);
+    margin-bottom: 1rem;
+}
+
+.converter-card h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0 0 2rem 0;
+}
+
+.converter-form {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    min-height: 100vh;
-    box-sizing: border-box;
-}
-
-header {
-    text-align: center;
-    margin-bottom: 40px;
-    color: #fff;
-}
-
-header h1 {
-    font-size: 2.5rem;
-    margin: 0;
-    font-weight: 600;
-}
-
-header p {
-    font-size: 1.1rem;
-    margin: 5px 0 0;
-    opacity: 0.9;
-}
-
-.container {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 30px;
-    max-width: 1200px;
-    width: 100%;
-}
-
-.card {
-    background: rgba(255, 255, 255, 0.95);
-    padding: 30px 40px;
-    border-radius: 15px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-    width: 100%;
-    max-width: 450px;
-    box-sizing: border-box;
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
-}
-
-.card h2 {
-    text-align: center;
-    color: #333;
-    font-weight: 600;
-    margin-top: 0;
-    margin-bottom: 25px;
-}
-
-.card h2 .fas {
-    margin-right: 10px;
-    color: #764ba2;
-}
-
-form {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
+    gap: 1.5rem;
 }
 
 .file-input-wrapper {
     position: relative;
-    width: 100%;
-}
-
-.file-input {
-    width: 0.1px;
-    height: 0.1px;
-    opacity: 0;
-    overflow: hidden;
-    position: absolute;
-    z-index: -1;
 }
 
 .file-input-label {
     display: block;
-    padding: 20px;
-    border: 2px dashed #ddd;
-    border-radius: 10px;
-    text-align: center;
-    cursor: pointer;
-    transition: border-color 0.3s, background-color 0.3s;
-}
-
-.file-input-label span {
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border-light);
+    border-radius: 8px;
+    background-color: #F9FAFB;
+    cursor: pointer; 
+    font-weight: 500;
+    color: var(--text-light);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
+
 .file-input-label:hover {
-    border-color: #764ba2;
-    background-color: #f9f6ff;
+    border-color: var(--bg-purple);
 }
 
-.file-input-label .fas {
-    margin-right: 8px;
+input[type="file"] {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
 }
 
 .btn {
-    padding: 15px 20px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
+    padding: 0.875rem 1rem;
     border: none;
     border-radius: 8px;
+    background-color: var(--bg-purple); /* This variable is defined in the :root above */
+    color: var(--card-white);
+    font-size: 1rem;
+    font-weight: 600;
     cursor: pointer;
-    font-size: 16px;
-    font-weight: 600;
-    font-family: 'Poppins', sans-serif;
-    transition: transform 0.2s, box-shadow 0.2s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+.btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
 }
 
-.flash-messages {
-    background-color: #ff4757;
-    color: white;
-    padding: 15px;
+#convert-btn {
+    gap: 0.5rem;
+}
+
+.loader {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    border-top-color: var(--card-white);
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.hidden {
+    display: none;
+}
+
+.alert {
+    padding: 1rem;
     border-radius: 8px;
-    margin-bottom: 20px;
-    text-align: center;
-    width: 100%;
-    max-width: 930px;
-    box-sizing: border-box;
+    margin-top: 1.5rem;
+    font-weight: 500;
+    text-align: left;
 }
 
-.download-section {
-    margin-top: 20px;
-    padding: 15px;
-    background-color: #f0fff5;
-    border: 1px solid #a8e6cf;
-    border-radius: 8px;
-    text-align: center;
+.alert-danger {
+    background-color: #FEF2F2;
+    color: #991B1B;
 }
 
-.download-link {
-    display: inline-block;
-    margin-top: 10px;
-    padding: 12px 20px;
-    background-color: #2ecc71;
-    color: white;
+.alert-success {
+    background-color: #F0FDF4;
+    color: #14532D;
+}
+
+.alert-success a {
+    display: block;
+    margin-top: 0.5rem;
+    color: var(--bg-purple); /* This variable is defined in the :root above */
     text-decoration: none;
-    border-radius: 8px;
-    transition: background-color 0.3s, transform 0.2s;
     font-weight: 600;
 }
 
-.download-link:hover {
-    background-color: #27ae60;
-    transform: translateY(-2px);
+.alert-success a:hover {
+    text-decoration: underline;
 }
 
-.image-preview-container {
+.download-title {
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.rename-wrapper {
     display: flex;
-    gap: 10px;
-    overflow-x: auto;
-    padding: 10px 0;
-    /* For better scrollbar styling on webkit browsers */
-    scrollbar-width: thin;
-    scrollbar-color: #ccc #f1f1f1;
+    gap: 0.75rem;
+    align-items: center;
+    margin-bottom: 0.75rem;
 }
 
-.image-preview-container::-webkit-scrollbar {
-    height: 8px;
-}
-
-.image-preview-container::-webkit-scrollbar-thumb {
-    background: #ccc;
-    border-radius: 4px;
-}
-
-.preview-item {
-    flex-shrink: 0;
-}
-
-.preview-image {
-    height: 100px;
-    width: auto;
+.rename-input {
+    flex-grow: 1;
+    padding: 0.6rem 0.75rem;
     border-radius: 8px;
-    object-fit: cover;
-    border: 1px solid #ddd;
+    border: 1px solid var(--border-light);
+    font-size: 0.9rem;
+    background-color: #F9FAFB;
+    color: var(--text-dark);
+    min-width: 0; /* Fix for flexbox shrinking */
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.rename-input:focus {
+    outline: none;
+    border-color: var(--bg-purple);
+    box-shadow: 0 0 0 2px rgba(109, 40, 217, 0.2);
+}
+
+.rename-wrapper .btn {
+    flex-shrink: 0; /* Prevent button from shrinking */
+    padding: 0.6rem 1rem;
+    background-color: var(--accent-green);
+}
+
+.rename-wrapper .btn:hover {
+    background-color: var(--accent-green-hover);
+}
+
+.alert-success ul {
+    list-style-position: inside;
 }
