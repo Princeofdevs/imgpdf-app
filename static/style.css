@@ -11,7 +11,7 @@
 }
 
 body {
-    background: linear-gradient(135deg, #5f0a87, #a4508b);
+    background: linear-gradient(135deg, blue, #a4508b);
     min-height: 100vh;
     color: #fff;
     padding: 2rem 1rem;

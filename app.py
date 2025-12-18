@@ -1,7 +1,11 @@
 import os
 import uuid
 import math
-from flask import Flask, render_template, request, redirect, url_for, flash, send_from_directory
+import time
+from flask import (
+    Flask, render_template, request, redirect,
+    url_for, flash, send_from_directory, after_this_request
+)
 from werkzeug.utils import secure_filename
 from PIL import Image
 import img2pdf
@@ -36,8 +40,24 @@ def allowed_file(filename, allowed):
 def unique_name(filename):
     return f"{uuid.uuid4().hex}_{secure_filename(filename)}"
 
+def clean_folder(folder, max_age_seconds=3600):
+    """Delete files older than max_age_seconds"""
+    now = time.time()
+    for f in os.listdir(folder):
+        path = os.path.join(folder, f)
+        if os.path.isfile(path):
+            if now - os.path.getmtime(path) > max_age_seconds:
+                try:
+                    os.remove(path)
+                except Exception:
+                    pass
+
+# Clean old files on startup
+clean_folder(UPLOAD_FOLDER)
+clean_folder(CONVERTED_FOLDER)
+
 # ======================
-# CHECK IF python-docx IS INSTALLED
+# OPTIONAL: IMAGE ➜ WORD SUPPORT
 # ======================
 try:
     from docx import Document
@@ -45,8 +65,7 @@ try:
     DOCX_AVAILABLE = True
 except ModuleNotFoundError:
     DOCX_AVAILABLE = False
-    print("Warning: python-docx not installed. Image → Word feature will be disabled.")
-
+    print("⚠️ python-docx not installed. Image → Word disabled.")
 
 # ======================
 # ROUTES
@@ -54,7 +73,6 @@ except ModuleNotFoundError:
 @app.route("/")
 def index():
     return render_template("index.html", docx_available=DOCX_AVAILABLE)
-
 
 # ----------------------
 # IMAGE ➜ PDF
@@ -69,23 +87,18 @@ def image_to_pdf():
     saved_images = []
 
     for file in files:
-        if file.filename == "":
-            continue
-        if not allowed_file(file.filename, ALLOWED_IMAGE_EXTENSIONS):
-            flash("Only PNG, JPG, JPEG allowed")
-            return redirect(url_for("index"))
-
-        path = os.path.join(UPLOAD_FOLDER, unique_name(file.filename))
-        file.save(path)
-        saved_images.append(path)
+        if file.filename and allowed_file(file.filename, ALLOWED_IMAGE_EXTENSIONS):
+            path = os.path.join(UPLOAD_FOLDER, unique_name(file.filename))
+            file.save(path)
+            saved_images.append(path)
 
     if not saved_images:
-        flash("No valid images")
+        flash("No valid images uploaded")
         return redirect(url_for("index"))
 
     layout = request.form.get("layout", "single")
-    temp_files = []
     final_images = []
+    temp_files = []
 
     IMAGES_PER_PAGE = 4 if layout == "multiple" else 1
     chunks = [saved_images[i:i + IMAGES_PER_PAGE] for i in range(0, len(saved_images), IMAGES_PER_PAGE)]
@@ -105,8 +118,7 @@ def image_to_pdf():
 
             canvas = Image.new("RGB", (cols * max_w, rows * max_h), (255, 255, 255))
             for i, img in enumerate(imgs):
-                r = i // cols
-                c = i % cols
+                r, c = divmod(i, cols)
                 x = c * max_w + (max_w - img.width) // 2
                 y = r * max_h + (max_h - img.height) // 2
                 canvas.paste(img, (x, y))
@@ -116,19 +128,16 @@ def image_to_pdf():
             final_images.append(stitched)
             temp_files.append(stitched)
 
-    except Exception as e:
-        flash(f"Image processing failed: {e}")
-        return redirect(url_for("index"))
+        pdf_name = f"converted_{uuid.uuid4().hex}.pdf"
+        pdf_path = os.path.join(CONVERTED_FOLDER, pdf_name)
 
-    pdf_name = f"converted_{uuid.uuid4().hex}.pdf"
-    pdf_path = os.path.join(CONVERTED_FOLDER, pdf_name)
-
-    try:
         with open(pdf_path, "wb") as f:
             f.write(img2pdf.convert(final_images))
+
     except Exception as e:
         flash(f"PDF generation failed: {e}")
         return redirect(url_for("index"))
+
     finally:
         for f in saved_images + temp_files:
             if os.path.exists(f):
@@ -136,37 +145,28 @@ def image_to_pdf():
 
     return render_template("index.html", pdf_download_link=pdf_name, docx_available=DOCX_AVAILABLE)
 
-
 # ----------------------
-# IMAGE ➜ WORD (only if docx available)
+# IMAGE ➜ WORD
 # ----------------------
 if DOCX_AVAILABLE:
     @app.route("/image-to-word", methods=["POST"])
     def image_to_word():
-        if "images_word" not in request.files:
-            flash("No images uploaded")
-            return redirect(url_for("index"))
-
         files = request.files.getlist("images_word")
         saved_images = []
 
         for file in files:
-            if file.filename == "":
-                continue
-            if not allowed_file(file.filename, ALLOWED_IMAGE_EXTENSIONS):
-                flash("Only PNG, JPG, JPEG allowed")
-                return redirect(url_for("index"))
-            path = os.path.join(UPLOAD_FOLDER, unique_name(file.filename))
-            file.save(path)
-            saved_images.append(path)
+            if file.filename and allowed_file(file.filename, ALLOWED_IMAGE_EXTENSIONS):
+                path = os.path.join(UPLOAD_FOLDER, unique_name(file.filename))
+                file.save(path)
+                saved_images.append(path)
 
         if not saved_images:
-            flash("No valid images")
+            flash("No valid images uploaded")
             return redirect(url_for("index"))
 
         doc = Document()
-        for img_path in saved_images:
-            doc.add_picture(img_path, width=Inches(6))
+        for img in saved_images:
+            doc.add_picture(img, width=Inches(6))
             doc.add_paragraph("")
 
         word_name = f"converted_{uuid.uuid4().hex}.docx"
@@ -174,11 +174,9 @@ if DOCX_AVAILABLE:
         doc.save(word_path)
 
         for f in saved_images:
-            if os.path.exists(f):
-                os.remove(f)
+            os.remove(f)
 
         return render_template("index.html", word_download_link=word_name, docx_available=DOCX_AVAILABLE)
-
 
 # ----------------------
 # PDF ➜ IMAGE
@@ -190,9 +188,8 @@ def pdf_to_image():
         return redirect(url_for("index"))
 
     file = request.files["pdf"]
-
     if not allowed_file(file.filename, ALLOWED_PDF_EXTENSIONS):
-        flash("Only PDF allowed")
+        flash("Only PDF files allowed")
         return redirect(url_for("index"))
 
     pdf_path = os.path.join(UPLOAD_FOLDER, unique_name(file.filename))
@@ -209,18 +206,26 @@ def pdf_to_image():
 
     return render_template("index.html", image_download_links=image_files, docx_available=DOCX_AVAILABLE)
 
-
 # ----------------------
-# DOWNLOAD
+# DOWNLOAD + AUTO CLEANUP
 # ----------------------
 @app.route("/download/<filename>")
 def download_file(filename):
-    return send_from_directory(
-        CONVERTED_FOLDER,
-        filename,
-        as_attachment=True
-    )
+    file_path = os.path.join(CONVERTED_FOLDER, filename)
 
+    if not os.path.exists(file_path):
+        flash("File expired or already downloaded")
+        return redirect(url_for("index"))
+
+    @after_this_request
+    def cleanup(response):
+        try:
+            os.remove(file_path)
+        except Exception:
+            pass
+        return response
+
+    return send_from_directory(CONVERTED_FOLDER, filename, as_attachment=True)
 
 # ======================
 # RUN APP
