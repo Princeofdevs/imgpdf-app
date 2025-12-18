@@ -33,9 +33,19 @@ app.secret_key = "dev-secret-key"
 def allowed_file(filename, allowed):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in allowed
 
-
 def unique_name(filename):
     return f"{uuid.uuid4().hex}_{secure_filename(filename)}"
+
+# ======================
+# CHECK IF python-docx IS INSTALLED
+# ======================
+try:
+    from docx import Document
+    from docx.shared import Inches
+    DOCX_AVAILABLE = True
+except ModuleNotFoundError:
+    DOCX_AVAILABLE = False
+    print("Warning: python-docx not installed. Image → Word feature will be disabled.")
 
 
 # ======================
@@ -43,7 +53,7 @@ def unique_name(filename):
 # ======================
 @app.route("/")
 def index():
-    return render_template("index.html")
+    return render_template("index.html", docx_available=DOCX_AVAILABLE)
 
 
 # ----------------------
@@ -73,15 +83,10 @@ def image_to_pdf():
         flash("No valid images")
         return redirect(url_for("index"))
 
-    # Options
     layout = request.form.get("layout", "single")
-    orientation = request.form.get("orientation", "portrait")
-    page_size = request.form.get("pagesize", "a4")  # 'a4' or 'letter'
-
     temp_files = []
     final_images = []
 
-    # Multiple images per page: simple grid with PIL
     IMAGES_PER_PAGE = 4 if layout == "multiple" else 1
     chunks = [saved_images[i:i + IMAGES_PER_PAGE] for i in range(0, len(saved_images), IMAGES_PER_PAGE)]
 
@@ -99,7 +104,6 @@ def image_to_pdf():
             max_h = max(i.height for i in imgs)
 
             canvas = Image.new("RGB", (cols * max_w, rows * max_h), (255, 255, 255))
-
             for i, img in enumerate(imgs):
                 r = i // cols
                 c = i % cols
@@ -116,7 +120,6 @@ def image_to_pdf():
         flash(f"Image processing failed: {e}")
         return redirect(url_for("index"))
 
-    # Convert to PDF using img2pdf defaults (no custom layout_fun)
     pdf_name = f"converted_{uuid.uuid4().hex}.pdf"
     pdf_path = os.path.join(CONVERTED_FOLDER, pdf_name)
 
@@ -127,12 +130,54 @@ def image_to_pdf():
         flash(f"PDF generation failed: {e}")
         return redirect(url_for("index"))
     finally:
-        # Clean up uploaded and stitched images
         for f in saved_images + temp_files:
             if os.path.exists(f):
                 os.remove(f)
 
-    return render_template("index.html", pdf_download_link=pdf_name)
+    return render_template("index.html", pdf_download_link=pdf_name, docx_available=DOCX_AVAILABLE)
+
+
+# ----------------------
+# IMAGE ➜ WORD (only if docx available)
+# ----------------------
+if DOCX_AVAILABLE:
+    @app.route("/image-to-word", methods=["POST"])
+    def image_to_word():
+        if "images_word" not in request.files:
+            flash("No images uploaded")
+            return redirect(url_for("index"))
+
+        files = request.files.getlist("images_word")
+        saved_images = []
+
+        for file in files:
+            if file.filename == "":
+                continue
+            if not allowed_file(file.filename, ALLOWED_IMAGE_EXTENSIONS):
+                flash("Only PNG, JPG, JPEG allowed")
+                return redirect(url_for("index"))
+            path = os.path.join(UPLOAD_FOLDER, unique_name(file.filename))
+            file.save(path)
+            saved_images.append(path)
+
+        if not saved_images:
+            flash("No valid images")
+            return redirect(url_for("index"))
+
+        doc = Document()
+        for img_path in saved_images:
+            doc.add_picture(img_path, width=Inches(6))
+            doc.add_paragraph("")
+
+        word_name = f"converted_{uuid.uuid4().hex}.docx"
+        word_path = os.path.join(CONVERTED_FOLDER, word_name)
+        doc.save(word_path)
+
+        for f in saved_images:
+            if os.path.exists(f):
+                os.remove(f)
+
+        return render_template("index.html", word_download_link=word_name, docx_available=DOCX_AVAILABLE)
 
 
 # ----------------------
@@ -162,7 +207,7 @@ def pdf_to_image():
     finally:
         os.remove(pdf_path)
 
-    return render_template("index.html", image_download_links=image_files)
+    return render_template("index.html", image_download_links=image_files, docx_available=DOCX_AVAILABLE)
 
 
 # ----------------------

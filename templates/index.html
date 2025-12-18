@@ -1,13 +1,14 @@
 {% extends "base.html" %}
 {% block content %}
+
 <div class="container">
 
+    <!-- CARDS ROW -->
     <div class="flex-row">
 
         <!-- IMAGE → PDF -->
         <section class="card">
             <h2>Image → PDF</h2>
-
             <form id="image-to-pdf-form" action="{{ url_for('image_to_pdf') }}" method="POST" enctype="multipart/form-data">
                 <div class="options">
                     <div>
@@ -27,21 +28,21 @@
                     <div>
                         <label>Layout</label>
                         <select name="layout">
-                            <option value="single">Single per page</option>
+                            <option value="single">Single</option>
                             <option value="multiple">Multiple per page</option>
                         </select>
                     </div>
                 </div>
 
                 <label class="file-upload">
-                    <input type="file" name="images" multiple required>
+                    <input type="file" name="images" accept="image/*" multiple required>
                     <div class="upload-inner">
                         <div class="upload-icon">
                             <i class="fas fa-cloud-upload-alt"></i>
                         </div>
                         <div class="upload-text">Click or Drag Images</div>
                     </div>
-                    <div class="file-names" id="image-file-names"></div>
+                    <div class="file-names" id="image-pdf-file-names"></div>
                 </label>
 
                 <button type="submit" class="btn">Convert to PDF</button>
@@ -52,107 +53,83 @@
             {% endif %}
         </section>
 
-        <!-- PDF → IMAGE -->
+        <!-- IMAGE → WORD -->
         <section class="card">
-            <h2>PDF → Images</h2>
-
-            <form id="pdf-to-image-form" action="{{ url_for('pdf_to_image') }}" method="POST" enctype="multipart/form-data">
+            <h2>Image → Word</h2>
+            <form id="image-to-word-form" action="{{ url_for('image_to_word') }}" method="POST" enctype="multipart/form-data">
                 <div class="options">
                     <div>
                         <label>Orientation</label>
-                        <select name="orientation_pdf2img">
+                        <select name="orientation_word">
                             <option value="portrait">Portrait</option>
                             <option value="landscape">Landscape</option>
                         </select>
                     </div>
                     <div>
                         <label>Page Size</label>
-                        <select name="pagesize_pdf2img">
+                        <select name="pagesize_word">
                             <option value="a4">A4</option>
                             <option value="letter">Letter</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label>Layout</label>
-                        <select name="layout_pdf2img">
-                            <option value="single">Single per page</option>
-                            <option value="multiple">Multiple per page</option>
                         </select>
                     </div>
                 </div>
 
                 <label class="file-upload">
-                    <input type="file" name="pdf" accept=".pdf" required>
+                    <input type="file" name="images_word" accept="image/*" multiple required>
                     <div class="upload-inner">
                         <div class="upload-icon">
-                            <i class="fas fa-cloud-upload-alt"></i>
+                            <i class="fas fa-file-word"></i>
                         </div>
-                        <div class="upload-text">Click or Drag PDF</div>
+                        <div class="upload-text">Click or Drag Images</div>
                     </div>
-                    <div class="file-names" id="pdf-file-names"></div>
+                    <div class="file-names" id="image-word-file-names"></div>
                 </label>
 
-                <button type="submit" class="btn">Convert to Images</button>
+                <button type="submit" class="btn">Convert to Word</button>
             </form>
 
-            {% if image_download_links %}
-            <div class="download-list">
-                {% for img in image_download_links %}
-                <a href="{{ url_for('download_file', filename=img) }}" class="btn download">Download {{ img }}</a>
-                {% endfor %}
-            </div>
+            {% if word_download_link %}
+            <a href="{{ url_for('download_file', filename=word_download_link) }}" class="btn download">Download Word</a>
             {% endif %}
         </section>
 
     </div>
-    <!-- ADVERTISEMENT SECTION -->
-<div class="ad-banner">
-    <p>Reserved for Advertisement</p>
-</div>
-<!-- END ADVERTISEMENT SECTION -->
+
+    <!-- ADVERTISEMENT -->
+    <div class="ad-banner">
+        <p>Reserved for Advertisement</p>
+    </div>
+
 </div>
 
 <script>
-    // IMAGE → PDF: Show selected file names
-    const imageInput = document.querySelector('input[name="images"]');
-    const imageFileNames = document.getElementById('image-file-names');
+    // Show selected file names for PDF
+    const imagePdfInput = document.querySelector('input[name="images"]');
+    const imagePdfFileNames = document.getElementById('image-pdf-file-names');
 
-    imageInput.addEventListener('change', () => {
-        imageFileNames.innerHTML = '';
-        Array.from(imageInput.files).forEach(f => {
+    imagePdfInput.addEventListener('change', () => {
+        imagePdfFileNames.innerHTML = '';
+        Array.from(imagePdfInput.files).forEach(f => {
             const div = document.createElement('div');
             div.className = 'file-name-item';
             div.textContent = f.name;
-            imageFileNames.appendChild(div);
+            imagePdfFileNames.appendChild(div);
         });
     });
 
-    // PDF → IMAGE: Show selected PDF file
-    const pdfInput = document.querySelector('input[name="pdf"]');
-    const pdfFileNames = document.getElementById('pdf-file-names');
+    // Show selected file names for Word
+    const imageWordInput = document.querySelector('input[name="images_word"]');
+    const imageWordFileNames = document.getElementById('image-word-file-names');
 
-    pdfInput.addEventListener('change', () => {
-        pdfFileNames.innerHTML = '';
-        Array.from(pdfInput.files).forEach(f => {
+    imageWordInput.addEventListener('change', () => {
+        imageWordFileNames.innerHTML = '';
+        Array.from(imageWordInput.files).forEach(f => {
             const div = document.createElement('div');
             div.className = 'file-name-item';
             div.textContent = f.name;
-            pdfFileNames.appendChild(div);
-        });
-    });
-
-    // Reset forms & hide download buttons after click
-    document.querySelectorAll('.download').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.getElementById('image-to-pdf-form').reset();
-            document.getElementById('pdf-to-image-form').reset();
-            imageFileNames.innerHTML = '';
-            pdfFileNames.innerHTML = '';
-
-            setTimeout(() => {
-                btn.style.display = 'none';
-            }, 200); // allow download to start
+            imageWordFileNames.appendChild(div);
         });
     });
 </script>
+
 {% endblock %}
