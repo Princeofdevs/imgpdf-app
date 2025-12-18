@@ -1,12 +1,70 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>ImgPDFApp</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDFHero</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 </head>
 <body>
-    {% block content %}{% endblock %}
+
+    <!-- MODERN NAVBAR -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">PDFHero</div>
+            <ul class="nav-links">
+                <li><a href="#">Home</a></li>
+                <li><a href="#">Features</a></li>
+                <li><a href="#">About</a></li>
+                <li><a href="#">Contact</a></li>
+            </ul>
+            <div class="menu-toggle">
+                <i class="fas fa-bars"></i>
+            </div>
+        </div>
+    </nav>
+<!-- FOOTER -->
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+<!-- TRUST-FOOTER -->
+<footer class="footer">
+  <div class="footer-container">
+    <!-- Left: App info -->
+    <div class="footer-left">
+      <h3>PDFHero</h3>
+      <p>Your reliable online PDF tool. Convert and manage PDFs safely.</p>
+      <p>made possible by EL-ROI.inc</p>
+    </div>
+
+    <!-- Center: Contact info -->
+    <div class="footer-center">
+      <p><i class="fas fa-phone"></i> +233 539 573 712</p>
+      <p><i class="fas fa-envelope"></i> <a href="mailto:mrprincekofiasante.123@gmail.com">mrprincekofiasante.123@gmail.com</a></p>
+    </div>
+
+    <!-- Right: Quick links -->
+    <div class="footer-right">
+      <a href="#">Home</a>
+      <a href="#">Features</a>
+      <a href="#">Support</a>
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    <p>© 2025 PDFHero. All rights reserved.</p>
+  </div>
+</footer>
+
+    <script>
+        // Toggle mobile menu
+        const menuToggle = document.querySelector('.menu-toggle');
+        const navLinks = document.querySelector('.nav-links');
+        menuToggle.addEventListener('click', () => {
+            navLinks.classList.toggle('active');
+        });
+    </script>
 </body>
 </html>

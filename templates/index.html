@@ -1,115 +1,157 @@
 {% extends "base.html" %}
-
 {% block content %}
-<div class="converter-card">
-    <svg class="converter-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M15 14.25V18a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 18V6.75A2.25 2.25 0 015.25 4.5h4.5m4.5 0H21v0M12 3v5.25" />
-    </svg>
-    <h1>Image &harr; PDF Converter</h1>
+<div class="container">
 
-    <form method="post" enctype="multipart/form-data" class="converter-form" id="converter-form">
-        <div class="file-input-wrapper">
-            <input type="file" id="file_upload" name="files" class="file-input" accept=".jpg, .jpeg, .png, .pdf" multiple required>
-            <label for="file_upload" class="file-input-label" id="file-label">Choose a file...</label>
-        </div>
-        <button type="submit" class="btn" id="convert-btn">
-            <span class="button-text">Convert</span>
-            <span class="loader hidden"></span>
-        </button>
-    </form>
+    <div class="flex-row">
 
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <div class="alert alert-danger" role="alert">{{ message }}</div>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
+        <!-- IMAGE → PDF -->
+        <section class="card">
+            <h2>Image → PDF</h2>
 
-    {% if pdf_download_link %}
-        <div class="alert alert-success">
-            <p class="download-title">Conversion Successful!</p>
-            <div class="rename-wrapper">
-                <input type="text" class="rename-input" value="{{ pdf_download_link.rsplit('.', 1)[0] }}" data-extension=".{{ pdf_download_link.rsplit('.', 1)[1] }}" data-original-filename="{{ pdf_download_link }}">
-                <a href="#" class="btn download-btn">
-                    <span class="button-text">Download</span>
-                </a>
-            </div>
-        </div>
-    {% endif %}
-
-    {% if image_download_links %}
-        <div class="alert alert-success">
-            <p class="download-title">Your images are ready!</p>
-            {% for link in image_download_links %}
-                <div class="rename-wrapper">
-                    <input type="text" class="rename-input" value="{{ link.rsplit('.', 1)[0] }}" data-extension=".{{ link.rsplit('.', 1)[1] }}" data-original-filename="{{ link }}">
-                    <a href="#" class="btn download-btn">
-                        <span class="button-text">Download</span>
-                    </a>
+            <form id="image-to-pdf-form" action="{{ url_for('image_to_pdf') }}" method="POST" enctype="multipart/form-data">
+                <div class="options">
+                    <div>
+                        <label>Orientation</label>
+                        <select name="orientation">
+                            <option value="portrait">Portrait</option>
+                            <option value="landscape">Landscape</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Page Size</label>
+                        <select name="pagesize">
+                            <option value="a4">A4</option>
+                            <option value="letter">Letter</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Layout</label>
+                        <select name="layout">
+                            <option value="single">Single per page</option>
+                            <option value="multiple">Multiple per page</option>
+                        </select>
+                    </div>
                 </div>
-            {% endfor %}
-        </div>
-    {% endif %}
+
+                <label class="file-upload">
+                    <input type="file" name="images" multiple required>
+                    <div class="upload-inner">
+                        <div class="upload-icon">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                        </div>
+                        <div class="upload-text">Click or Drag Images</div>
+                    </div>
+                    <div class="file-names" id="image-file-names"></div>
+                </label>
+
+                <button type="submit" class="btn">Convert to PDF</button>
+            </form>
+
+            {% if pdf_download_link %}
+            <a href="{{ url_for('download_file', filename=pdf_download_link) }}" class="btn download">Download PDF</a>
+            {% endif %}
+        </section>
+
+        <!-- PDF → IMAGE -->
+        <section class="card">
+            <h2>PDF → Images</h2>
+
+            <form id="pdf-to-image-form" action="{{ url_for('pdf_to_image') }}" method="POST" enctype="multipart/form-data">
+                <div class="options">
+                    <div>
+                        <label>Orientation</label>
+                        <select name="orientation_pdf2img">
+                            <option value="portrait">Portrait</option>
+                            <option value="landscape">Landscape</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Page Size</label>
+                        <select name="pagesize_pdf2img">
+                            <option value="a4">A4</option>
+                            <option value="letter">Letter</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Layout</label>
+                        <select name="layout_pdf2img">
+                            <option value="single">Single per page</option>
+                            <option value="multiple">Multiple per page</option>
+                        </select>
+                    </div>
+                </div>
+
+                <label class="file-upload">
+                    <input type="file" name="pdf" accept=".pdf" required>
+                    <div class="upload-inner">
+                        <div class="upload-icon">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                        </div>
+                        <div class="upload-text">Click or Drag PDF</div>
+                    </div>
+                    <div class="file-names" id="pdf-file-names"></div>
+                </label>
+
+                <button type="submit" class="btn">Convert to Images</button>
+            </form>
+
+            {% if image_download_links %}
+            <div class="download-list">
+                {% for img in image_download_links %}
+                <a href="{{ url_for('download_file', filename=img) }}" class="btn download">Download {{ img }}</a>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </section>
+
+    </div>
+    <!-- ADVERTISEMENT SECTION -->
+<div class="ad-banner">
+    <p>Reserved for Advertisement</p>
+</div>
+<!-- END ADVERTISEMENT SECTION -->
 </div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const form = document.getElementById('converter-form');
-        const fileInput = document.getElementById('file_upload');
-        const fileLabel = document.getElementById('file-label');
-        const defaultLabelText = 'Choose a file...';
+    // IMAGE → PDF: Show selected file names
+    const imageInput = document.querySelector('input[name="images"]');
+    const imageFileNames = document.getElementById('image-file-names');
 
-        fileInput.addEventListener('change', function() {
-            if (this.files.length > 0) {
-                const firstFile = this.files[0];
-                const isPdf = firstFile.type === 'application/pdf';
-
-                if (isPdf) {
-                    form.action = "{{ url_for('pdf_to_image') }}";
-                    fileInput.name = 'pdf';
-                    fileInput.multiple = false;
-                    fileLabel.textContent = firstFile.name;
-                } else {
-                    form.action = "{{ url_for('image_to_pdf') }}";
-                    fileInput.name = 'images'; // This should match the name in `request.files.getlist('images')`
-                    fileInput.multiple = true;
-                    if (this.files.length > 1) {
-                        fileLabel.textContent = `${this.files.length} images selected`;
-                    } else {
-                        fileLabel.textContent = firstFile.name;
-                    }
-                }
-            } else {
-                fileLabel.textContent = defaultLabelText;
-            }
+    imageInput.addEventListener('change', () => {
+        imageFileNames.innerHTML = '';
+        Array.from(imageInput.files).forEach(f => {
+            const div = document.createElement('div');
+            div.className = 'file-name-item';
+            div.textContent = f.name;
+            imageFileNames.appendChild(div);
         });
+    });
 
-        form.addEventListener('submit', function() {
-            const button = document.getElementById('convert-btn');
-            if (button) {
-                button.querySelector('.button-text').classList.add('hidden');
-                button.querySelector('.loader').classList.remove('hidden');
-                button.disabled = true;
-            }
+    // PDF → IMAGE: Show selected PDF file
+    const pdfInput = document.querySelector('input[name="pdf"]');
+    const pdfFileNames = document.getElementById('pdf-file-names');
+
+    pdfInput.addEventListener('change', () => {
+        pdfFileNames.innerHTML = '';
+        Array.from(pdfInput.files).forEach(f => {
+            const div = document.createElement('div');
+            div.className = 'file-name-item';
+            div.textContent = f.name;
+            pdfFileNames.appendChild(div);
         });
+    });
 
-        document.querySelectorAll('.download-btn').forEach(button => {
-            button.addEventListener('click', function(e) {
-                e.preventDefault();
-                const wrapper = this.closest('.rename-wrapper');
-                const input = wrapper.querySelector('.rename-input');
-                const originalFilename = input.dataset.originalFilename;
-                const extension = input.dataset.extension;
-                const newName = input.value.trim() + extension;
-                const downloadUrl = `{{ url_for('download_file', filename='placeholder') }}`.replace('placeholder', originalFilename) + `?new_filename=${encodeURIComponent(newName)}`;
-                
-                // Start the download
-                window.location.href = downloadUrl;
+    // Reset forms & hide download buttons after click
+    document.querySelectorAll('.download').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.getElementById('image-to-pdf-form').reset();
+            document.getElementById('pdf-to-image-form').reset();
+            imageFileNames.innerHTML = '';
+            pdfFileNames.innerHTML = '';
 
-                // After a short delay, redirect to the home page to reset the UI
-                setTimeout(() => { window.location.href = "{{ url_for('index') }}"; }, 500);
-            });
+            setTimeout(() => {
+                btn.style.display = 'none';
+            }, 200); // allow download to start
         });
     });
 </script>
