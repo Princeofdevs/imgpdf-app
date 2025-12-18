@@ -69,5 +69,24 @@
             {% endif %}
         </div>
     </main>
+
+    <script>
+        document.querySelectorAll('.file-input').forEach(inputElement => {
+            inputElement.addEventListener('change', function(event) {
+                const label = this.nextElementSibling;
+                const defaultLabelText = `<i class="fas fa-upload"></i> Choose ${this.multiple ? 'Images' : 'PDF'}...`;
+
+                if (this.files && this.files.length > 0) {
+                    if (this.files.length > 1) {
+                        label.innerHTML = `<i class="fas fa-copy"></i> ${this.files.length} files selected`;
+                    } else {
+                        label.textContent = this.files[0].name;
+                    }
+                } else {
+                    label.innerHTML = defaultLabelText;
+                }
+            });
+        });
+    </script>
 </body>
 </html>
